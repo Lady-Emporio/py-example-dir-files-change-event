@@ -1,0 +1,30 @@
+import os
+
+import win32file
+import win32event
+import win32con
+switch={
+    win32con.WAIT_ABANDONED:"Хрень какая-то с mutex.",
+    win32con.WAIT_OBJECT_0:"Состояние изменилось.",
+    win32con.WAIT_TIMEOUT:"таймаут.",
+    win32con.WAIT_FAILED:"Функция грохнулась.",
+}
+path_to_watch = os.path.abspath (".")
+
+change_handle = win32file.FindFirstChangeNotification (
+  path_to_watch,
+  0,
+  win32con.FILE_NOTIFY_CHANGE_FILE_NAME
+)
+
+wait5sec=5000
+for i in range(10):
+    result=None
+    result = win32event.WaitForSingleObject (change_handle,wait5sec )
+    state=switch.get(result) 
+    if (None==state):
+        print("Непредвиденная логическая ошибка.")
+    else:
+        print(state)
+    win32file.FindNextChangeNotification (change_handle)
+win32file.FindCloseChangeNotification (change_handle)
